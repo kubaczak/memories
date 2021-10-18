@@ -17,8 +17,50 @@ DB_PASSWORD = ""
 DB_NAME = ""
 DB_CHARSET = "utf8"
 
+# CREATING BOT AND BINDING ACTIONS
+def bot_polling():
+    print("STARTING PROGRAM")
+    # CREATING BOT AFTER ERROR
+    end = True
+    while end:
+        try:
+            print("Starting bot instance")
+            bot = telebot.telebot(BOT_TOKEN)
+            botactions()
+            bot.polling(none_stop=True, interval=BOT_INTERVAL, timeout=BOT_TIMEOUT)
+        except Exception as ex:
+            print("Something went wrong :( (" + ex + ") Restarting...")
+            bot.stop_polling()
+            sleep(BOT_TIMEOUT)
+        else:
+            bot.stop_polling()
+            print("Shutting down...")
+            end = False
 
+# BOT FUNCTIONS
+def botactions():
+    # help message
+    @bot.message_handler(commands=["start", "help", "pomoc"])
+    def command_start(msg):
+        bot.send_message(msg.from_user.id, "Hejka!")
+
+# RECURRING ACTIONS
+def time_events():
+    pass
+
+# MAIN LOOP
 if __name__ == "__main__":
+
+    # POLLING THRED FOR BOT
+    polling_thread = threading.Thread(target=bot_polling)
+    polling_thread.daemon = True
+    polling_thread.start()
+
+    # POLLING THRED FOR RECURRING ACTIONS
+    time_events_thread = threading.Thread(target=time_events)
+    time_events_thread.daemon = True
+    time_events_thread.start()
+
     end = True
     while end:
         try:
