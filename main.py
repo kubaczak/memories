@@ -21,8 +21,8 @@ DB_CHARSET = "utf8"
 def bot_polling():
     print("STARTING PROGRAM")
     # CREATING BOT AFTER ERROR
-    end = True
-    while end:
+    endBot = True
+    while endBot:
         try:
             print("Starting bot instance")
             bot = telebot.telebot(BOT_TOKEN)
@@ -35,14 +35,22 @@ def bot_polling():
         else:
             bot.stop_polling()
             print("Shutting down...")
-            end = False
+            endBot = False
 
 # BOT FUNCTIONS
 def botactions():
     # help message
     @bot.message_handler(commands=["start", "help", "pomoc"])
     def command_start(msg):
-        bot.send_message(msg.from_user.id, "Hejka!")
+        bot.send_message(msg.from_user.id, "<b> Witaj! </b> \n"+
+                                           "Jeśli chciałbyś się zapisać wystarczy, że wpiszesz \"/dolacz\"\n"
+                                           "\n"
+                                           "Aby uzyskać więcej informacji na temat bota wejdź <a href=\"https://kubaczak.com/memories\">TUTAJ</a>")
+
+    # join message
+    @bot.message_handler(commands=["dolacz", "join", "wlacz"])
+    def command_join(msg):
+        pass
 
 # RECURRING ACTIONS
 def time_events():
