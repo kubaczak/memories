@@ -1,6 +1,14 @@
 {
+  "main": "app.js",
+  "scripts": {
+    "start": "node .",
+    "dev": "nodemon"
+  },
   "dependencies": {
     "mysql": "^2.18.1",
     "telebot": "^1.4.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.14"
   }
 }
