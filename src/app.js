@@ -283,19 +283,15 @@ function przypomnienie(){
         let sql = `SELECT users.id FROM users WHERE NOT users.id IN (SELECT fom.user_id FROM fom WHERE fom.date BETWEEN '${db_date} 00:00:00' AND '${db_date} 23:59:59');`
         connection.query(sql, function(err, rows){
             if(err) throw err;
-            console.log(rows)
             for(i in rows){
-                console.log(i)
-                bot.sendMessage(i.id, "<b>Witaj!</b> 🤗\nWygląda na to, że nie uzupełniłeś informacji o swoim dzisiejszym samopoczuciu, więc jestem tu, aby ci o tym przypomnieć! Jak się dziś czujesz? Dobrze, źle czy średnio?", {parseMode: "html"})
+                bot.sendMessage(rows[i].id, "<b>Witaj!</b> 🤗\nWygląda na to, że nie uzupełniłeś informacji o swoim dzisiejszym samopoczuciu, więc jestem tu, aby ci o tym przypomnieć! Jak się dziś czujesz? Dobrze, źle czy średnio?", {parseMode: "html"})
             }
         });
         sql = `SELECT users.id FROM users WHERE users.id IN (SELECT fom.user_id FROM fom WHERE fom.date BETWEEN '${db_date} 00:00:00' AND '${db_date} 23:59:59') AND NOT users.id IN (SELECT memories.user_id FROM memories WHERE memories.date BETWEEN '${db_date} 00:00:00' AND '${db_date} 23:59:59');`
         connection.query(sql, function(err, rows){
             if(err) throw err;
-            console.log(rows)
             for(i in rows){
-                console.log(i)
-                bot.sendMessage(i.id, "<b>Witaj!</b> 🤗\nJeszcze nie zapisałeś dzisiejszego wspomnienia. Pamiętaj o tym, zanim uśniesz inaczej zapomnisz o tym dniu. (To by było straszne 😱)", {parseMode: "html"})
+                bot.sendMessage(rows[i].id, "<b>Witaj!</b> 🤗\nJeszcze nie zapisałeś dzisiejszego wspomnienia. Pamiętaj o tym, zanim uśniesz inaczej zapomnisz o tym dniu. (To by było straszne 😱)", {parseMode: "html"})
             }
         });
     });  
