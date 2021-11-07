@@ -5,7 +5,7 @@ Każdego dnia zapisuje wspomnienia użytkownika w bazie danych. Wspomnienia te n
 
 Bot zbiera również informacje o samopoczuciu i w przypadku, gdy użytkownik poinformuje bota o słabym samopoczuciu, wyśle mu losowe zdjęcie kotka.
 
-##Instalacja
+## Instalacja
 ```
 $ yarn install
 ```
