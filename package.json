@@ -1,5 +1,5 @@
 {
-  "main": "app.js",
+  "main": "./src/app.js",
   "scripts": {
     "start": "node .",
     "dev": "nodemon"
@@ -12,3 +12,4 @@
     "nodemon": "^2.0.14"
   }
 }
+
