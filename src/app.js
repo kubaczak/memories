@@ -11,7 +11,8 @@ const db_pool = mysql.createPool({
     password: CONFIG.password,
     database: CONFIG.database,
     multipleStatements: true,
-    charset: "utf8"
+    charset: "utf8mb4"
+
 })
 
 
