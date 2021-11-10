@@ -10,7 +10,8 @@ const db_pool = mysql.createPool({
     user: CONFIG.user,
     password: CONFIG.password,
     database: CONFIG.database,
-    multipleStatements: true
+    multipleStatements: true,
+    charset: "utf8"
 })
 
 
@@ -82,7 +83,9 @@ bot.on(/^\/dolacz(?![^ ])(.*)$/, (msg, props) => {
                 return bot.sendMessage(msg.from.id, "Jesteś już zapisany 😉 Jeśli chcesz się wypisać kliknij <code>/wypisz</code>", {parseMode: 'html'});
             }
         })
+        connection.release();
     });
+
 })
 
 /**
