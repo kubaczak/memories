@@ -15,10 +15,35 @@ const db_pool = mysql.createPool({
 
 })
 
+// Przyciski
+const BUTTONS = {
+    dobrze: {
+        label: 'Dobrze',
+        command: '/dobrze'
+    },
+    srednio: {
+        label: 'Średnio',
+        command: '/średnio'
+    },
+    zle: {
+        label: 'Źle',
+        command: '/źle'
+    }
+}
 
 const bot = new TeleBot({
     token: CONFIG.botToken,
-    polling: true
+    polling: true,
+    usePlugins: ['namedButtons', 'floodProtection'],
+    pluginConfig: {
+        namedButtons: {
+            buttons: BUTTONS
+        },
+        floodProtection: {
+            interval: 2,
+            message: 'Wysyłasz za dużo wiadomości!'
+        }
+    }
 });
 
 // Generowanie hasła
@@ -71,7 +96,7 @@ bot.on(/^\/dolacz(?![^ ])(.*)$/, (msg, props) => {
                             let sql = `INSERT INTO users VALUES (${id}, ` + connection.escape(nickname) + `, '${db_date}', '${hash.sha256(password)}', 1);`;
                             connection.query(sql, function(err){
                                 if(err) throw err;
-                                return bot.sendMessage(id, "<b>Zarejestrowano!</b> 😁\nTwoje hasło do strony internetowej to: <code>" + password + "</code> (radzę ci je szybciutko zmienić).\nTwoje wspomnienia będą widoczne <a href='https://kubaczak.com/memories'>TUTAJ</a> po upływie roku. Możesz zacząć już dziś! Napisz do mnie wspomnienie, które kojaży ci się z dzisiejszym dniem. 🤗", {parseMode: 'html'})
+                                bot.sendMessage(id, `<b>Zarejestrowano!</b> 😁\nTwoje hasło do strony internetowej to: ${password}\n\nTwoje wspomnienia będą widoczne <a href='https://kubaczak.com/memories'>TUTAJ</a> po upływie roku. Możesz zacząć już dziś! Napisz do mnie wspomnienie, które kojaży ci się z dzisiejszym dniem. 🤗`, {parseMode: 'html'});
                             })
                         } else {
                             return bot.sendMessage(msg.from.id, "Ta nazwa użytkownika jest już zajęta! Muszisz wybrać sobie inną.");
@@ -81,7 +106,7 @@ bot.on(/^\/dolacz(?![^ ])(.*)$/, (msg, props) => {
                     return bot.sendMessage(msg.from.id, "Aby się zapisać musisz podać swój pseudonim!\nUżyj:\n<code>/dolacz (pseudonim)</code>", {parseMode: 'html'});
                 }
             } else {
-                return bot.sendMessage(msg.from.id, "Jesteś już zapisany 😉 Jeśli chcesz się wypisać kliknij <code>/wypisz</code>", {parseMode: 'html'});
+                return bot.sendMessage(msg.from.id, "Jesteś już zapisany 😉 Jeśli chcesz się wypisać kliknij /wypisz", {parseMode: 'html'});
             }
         })
         connection.release();
@@ -121,7 +146,7 @@ bot.on(/\/wypisz(?![^ ])(.*)$/, (msg, props) => {
                 }
                 
             } else {
-                return bot.sendMessage(msg.from.id, "Nie jesteś zapisany. Wpisz <code>/dolacz</code>, aby się zapisać.", {parseMode: 'html'});
+                return bot.sendMessage(msg.from.id, "Nie jesteś zapisany. Wpisz /dolacz, aby się zapisać.", {parseMode: 'html'});
             }
         })
     });
@@ -132,7 +157,7 @@ bot.on(/\/wypisz(?![^ ])(.*)$/, (msg, props) => {
  * informacją o samopoczuciu. Gdy użytkownik wysłał wspomnienie tego dnia, nie będzie mógł wysłać
  * drugiego. Maksymalna długość wspomnienia to 4096 znaków (limit znaków wiadomości na telegramie)
  */
-bot.on(/^(?!(\/dolacz|\/start|\/wypisz|\/usunwspomnienie)).*/, (msg) => {
+bot.on(/^(?!(\/dolacz|\/start|\/wypisz|\/usunwspomnienie|\/resetujhaslo)).*/, (msg) => {
     if(["dobrze", "średnio", "źle"].indexOf(msg.text.toLowerCase()) > -1){
         return;
     }
@@ -166,11 +191,11 @@ bot.on(/^(?!(\/dolacz|\/start|\/wypisz|\/usunwspomnienie)).*/, (msg) => {
                             return bot.sendMessage(msg.from.id, "Zapisałem twoje dzisiejsze wspomnienie 😁");
                         })
                     } else {
-                        return bot.sendMessage(msg.from.id, "Wysłałeś już dzisiejsze wspomnienie. Aby je zmienić musisz najpierw usunąć poprzednie \n<code>/usunwspomnienie</code>", {parseMode: 'html'})
+                        return bot.sendMessage(msg.from.id, "Wysłałeś już dzisiejsze wspomnienie. Aby je zmienić musisz najpierw usunąć poprzednie \n/usunwspomnienie", {parseMode: 'html'})
                     }
                 })
             } else {
-                return bot.sendMessage(msg.from.id, "Nie jesteś zapisany. Wpisz <code>/dolacz</code>, aby się zapisać.", {parseMode: 'html'});
+                return bot.sendMessage(msg.from.id, "Nie jesteś zapisany. Wpisz /dolacz, aby się zapisać.", {parseMode: 'html'});
             }
         })
     });
@@ -202,7 +227,7 @@ bot.on('/usunwspomnienie', (msg) => {
  * samopoczucie inne niż dobrze, bot wyśle do użytkownika losowe zdjęcie kota
  * z TheCatApi. Regex wykrywa te 3 słowa niezależnie od wielkości liter.
  */
-bot.on(/^(dobrze|źle|średnio)/i, (msg) => {
+bot.on(/^\/?(dobrze|źle|średnio)/i, (msg) => {
     db_pool.getConnection(function(err, connection) {
         if (err) {
             console.log("Error in connection to the database." + err);
@@ -242,9 +267,9 @@ bot.on(/^(dobrze|źle|średnio)/i, (msg) => {
                         connection.query(sql, function(err){
                             if(err) throw err;
                             if(fom == 2)
-                                return bot.sendMessage(msg.from.id, "<b>Zapisałem twoje dzisiejsze samopoczucie</b> 😁\nTeraz możesz mi opowiedzieć o swoim dniu, jeśli jeszcze tego nie zrobiłeś.", {parseMode: 'html'});
+                                return bot.sendMessage(msg.from.id, "<b>Zapisałem twoje dzisiejsze samopoczucie</b> 😁\nTeraz możesz mi opowiedzieć o swoim dniu, jeśli jeszcze tego nie zrobiłeś.", {parseMode: 'html', replyMarkup: 'hide'});
                             if(fom == 1 || fom == 0){
-                                bot.sendMessage(msg.from.id, "Przykro mi to słyszeć 😔 Mam nadzieję, że zdjęcie tego kotka poprawi ci humor 😸 Później będziesz mógł opisać mi swój dzień, jeśli jeszcze tego nie zrobiłeś.");
+                                bot.sendMessage(msg.from.id, "Przykro mi to słyszeć 😔 Mam nadzieję, że zdjęcie tego kotka poprawi ci humor 😸 Później będziesz mógł opisać mi swój dzień, jeśli jeszcze tego nie zrobiłeś.", {replyMarkup: 'hide'});
                                 let promise;
                                 let id = msg.from.id;
                                 promise = bot.sendPhoto(id, API + 'jpg', {
@@ -259,11 +284,36 @@ bot.on(/^(dobrze|źle|średnio)/i, (msg) => {
                             }
                         })
                     } else {
-                        return bot.sendMessage(msg.from.id, "Wysłałeś już dzisiejsze samopoczucie. Aby je zmienić musisz najpierw usunąć poprzednie \n<code>/usunwspomnienie</code>", {parseMode: 'html'})
+                        return bot.sendMessage(msg.from.id, "Wysłałeś już dzisiejsze samopoczucie. Aby je zmienić musisz najpierw usunąć poprzednie \n/usunwspomnienie", {parseMode: 'html'})
                     }
                 })
             } else {
-                return bot.sendMessage(msg.from.id, "Nie jesteś zapisany.\nWpisz <code>/dolacz</code>, aby się zapisać.", {parseMode: 'html'});
+                return bot.sendMessage(msg.from.id, "Nie jesteś zapisany.\nWpisz /dolacz, aby się zapisać.", {parseMode: 'html'});
+            }
+        })
+    });
+    return;
+})
+
+// Komenda do resetowania hasła
+bot.on('/resetujhaslo', (msg) => {
+    db_pool.getConnection(function(err, connection) {
+        if (err) {
+            console.log("Error in connection to the database." + err);
+            return bot.sendMessage(msg.from.id, "Wystąpił problem po mojej stronie ☹ Spróbuj ponownie później.");
+        };
+        var sql = "SELECT * FROM users WHERE id='"+ msg.from.id +"';"
+        connection.query(sql, function(err, rows){
+            if (err) throw err;
+            if(rows.length != 0){
+                let password = random(16);
+                let sql = `UPDATE users SET password='${hash.sha256(password)}', first_login=1 WHERE id=${msg.from.id}`;
+                connection.query(sql, function(err){
+                    if (err) throw err;
+                    bot.sendMessage(msg.from.id, `<b>Hasło zresetowane!</b>\nTwoje nowe hasło to: ${password}`, {parseMode: 'html'});
+                })
+            } else {
+                return bot.sendMessage(msg.from.id, "Nie jesteś zapisany.\nWpisz /dolacz, aby się zapisać.", {parseMode: 'html'});
             }
         })
     });
@@ -288,7 +338,11 @@ function przypomnienie(){
         connection.query(sql, function(err, rows){
             if(err) throw err;
             for(i in rows){
-                bot.sendMessage(rows[i].id, "<b>Witaj!</b> 🤗\nWygląda na to, że nie uzupełniłeś informacji o swoim dzisiejszym samopoczuciu, więc jestem tu, aby ci o tym przypomnieć! Jak się dziś czujesz? Dobrze, źle czy średnio?", {parseMode: "html"})
+                let replyMarkup = bot.keyboard([
+                    [BUTTONS.dobrze.label, BUTTONS.srednio.label],
+                    [BUTTONS.zle.label]
+                ], {resize: true});
+                bot.sendMessage(rows[i].id, "<b>Witaj!</b> 🤗\nWygląda na to, że nie uzupełniłeś informacji o swoim dzisiejszym samopoczuciu, więc jestem tu, aby ci o tym przypomnieć! Jak się dziś czujesz? Dobrze, źle czy średnio?", {parseMode: "html", replyMarkup})
             }
         });
         sql = `SELECT users.id FROM users WHERE users.id IN (SELECT fom.user_id FROM fom WHERE fom.date BETWEEN '${db_date} 00:00:00' AND '${db_date} 23:59:59') AND NOT users.id IN (SELECT memories.user_id FROM memories WHERE memories.date BETWEEN '${db_date} 00:00:00' AND '${db_date} 23:59:59');`

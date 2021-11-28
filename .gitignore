@@ -1,3 +1,4 @@
 node_modules 
 src/config.json
 test.js
+www/assets/config.php
