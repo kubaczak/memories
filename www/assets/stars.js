@@ -108,3 +108,9 @@ particlesJS("particles-js", {
     },
     "retina_detect": true
   });
+
+var ranged = new Datepicker('#datePicker', {
+  ranged: true,
+  inline: false,
+  separator: " - "
+});

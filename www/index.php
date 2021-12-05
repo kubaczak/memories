@@ -5,8 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Twoje Wspomnienia</title>
+    <script type="text/javascript" src="./assets/datepicker.js"></script>
+    <script type="text/javascript" src="./assets/script.js"></script>
+    <link rel="stylesheet" href="./assets/datepicker.material.css">
     <link rel="stylesheet" href="./assets/style.css">
-    <script src="./assets/script.js"></script>
 </head>
 
 <body>
@@ -48,14 +50,18 @@
         ?>
             <form action="changePassword.php" method="POST" class="login">
                 <h1>Zmiana hasla</h1>
-                <input name="login" type="password" class="input" placeholder="Hasło">
-                <input name="password" type="password" class="input" placeholder="Powtórz hasło">
+                <input name="password" type="password" class="input" placeholder="Hasło">
+                <input name="rpassword" type="password" class="input" placeholder="Powtórz hasło">
                 <button type="submit" class="button">Zmień</button>
             </form>
         <?php
         } else {
-
         ?>
+
+            <form action="test.php" method="GET" class="settings">
+                <input type="text" name="dateRange" id="datePicker" placeholder="Wybierz zakres czasu">
+                <button type="submit" class="button">Filtruj</button>
+            </form>
 
         <?php
         }; ?>
