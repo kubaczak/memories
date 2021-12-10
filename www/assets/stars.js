@@ -109,8 +109,13 @@ particlesJS("particles-js", {
     "retina_detect": true
   });
 
+
+
+
 var ranged = new Datepicker('#datePicker', {
   ranged: true,
   inline: false,
-  separator: " - "
+  separator: " - ",
+  min: new Date(new Date().getFullYear()-1, 0, 1),
+  max: new Date(new Date().getFullYear()-1, 11, 31)
 });

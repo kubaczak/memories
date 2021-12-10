@@ -56,13 +56,52 @@
             </form>
         <?php
         } else {
+            if (isset($_GET['dateRange'])) {
+                $dateRange = $_GET['dateRange'];
+            }
+            if (isset($_GET['size'])) {
+                $dateRange = $_GET['size'];
+            }
+            if (isset($_GET['page'])) {
+                $dateRange = $_GET['page'];
+            }
+            if (isset($_GET['randomized'])) {
+                $dateRange = $_GET['randmized'];
+            }
+            $id = $_SESSION['user_id']
         ?>
+            <div class="container">
+                <form action="index.php" method="GET" class="settings">
+                    <div class="settingsInputs">
+                        <input type="text" name="dateRange" id="datePicker" <?php if (isset($dateRange)) {
+                                                                                echo "value='$dateRange'";
+                                                                            } else {
+                                                                                $dateRange = "1.1.2021 - 31.12.2021";
+                                                                                echo "value='$dateRange'";
+                                                                            } ?> placeholder="Wybierz zakres czasu">
+                        <input type="number" name="size" id="input" <?php if (isset($size)) {
+                                                                        echo "value='$size'";
+                                                                    } else {
+                                                                        $size = 20;
+                                                                        echo "value='$size'";
+                                                                    } ?> placeholder="Ilość na stronie">
+                        <input type="number" name="page" id="input" <?php if (isset($page)) {
+                                                                        echo "value='$page'";
+                                                                    } else {
+                                                                        $page = 1;
+                                                                        echo "value='$page'";
+                                                                    } ?> placeholder="Strona">
+                        <label for="randomized">Losowo</label>
+                        <input type="checkbox" name="randomized" id="randomized" <?php if (isset($randomized)) {
+                                                                                        echo "value='$randomized'";
+                                                                                    } ?> placeholder="Losowo">
+                    </div>
+                    <button type="submit" class="button">Filtruj</button>
+                </form>
+                <div class="memories">
 
-            <form action="test.php" method="GET" class="settings">
-                <input type="text" name="dateRange" id="datePicker" placeholder="Wybierz zakres czasu">
-                <button type="submit" class="button">Filtruj</button>
-            </form>
-
+                </div>
+            </div>
         <?php
         }; ?>
     </div>
