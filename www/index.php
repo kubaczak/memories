@@ -60,46 +60,120 @@
                 $dateRange = $_GET['dateRange'];
             }
             if (isset($_GET['size'])) {
-                $dateRange = $_GET['size'];
+                $size = $_GET['size'];
             }
             if (isset($_GET['page'])) {
-                $dateRange = $_GET['page'];
+                $page = $_GET['page'];
             }
             if (isset($_GET['randomized'])) {
-                $dateRange = $_GET['randmized'];
+                $randomized = $_GET['randomized'];
             }
             $id = $_SESSION['user_id']
         ?>
             <div class="container">
-                <form action="index.php" method="GET" class="settings">
+                <form action="index.php" id="settings" method="GET" class="settings">
                     <div class="settingsInputs">
-                        <input type="text" name="dateRange" id="datePicker" <?php if (isset($dateRange)) {
-                                                                                echo "value='$dateRange'";
-                                                                            } else {
-                                                                                $dateRange = "1.1.2021 - 31.12.2021";
-                                                                                echo "value='$dateRange'";
-                                                                            } ?> placeholder="Wybierz zakres czasu">
-                        <input type="number" name="size" id="input" <?php if (isset($size)) {
-                                                                        echo "value='$size'";
-                                                                    } else {
-                                                                        $size = 20;
-                                                                        echo "value='$size'";
-                                                                    } ?> placeholder="Ilość na stronie">
-                        <input type="number" name="page" id="input" <?php if (isset($page)) {
-                                                                        echo "value='$page'";
-                                                                    } else {
-                                                                        $page = 1;
-                                                                        echo "value='$page'";
-                                                                    } ?> placeholder="Strona">
+                        <label for="datePicker">Wybierz zakres czasu</label>
+                        <input type="text" name="dateRange" class="inputBox" id="datePicker" <?php if (isset($dateRange)) {
+                                                                                                    echo "value='$dateRange'";
+                                                                                                } else {
+                                                                                                    $dateRange = "1.1.2021 - 31.12.2021";
+                                                                                                    echo "value='$dateRange'";
+                                                                                                } ?> placeholder="Wybierz zakres czasu">
+                        <label for="inputSize">Ilość na stronie</label>
+                        <input type="number" name="size" class="inputBox" step="10" id="inputSize" <?php if (isset($size)) {
+                                                                                                        echo "value='$size'";
+                                                                                                    } else {
+                                                                                                        $size = 20;
+                                                                                                        echo "value='$size'";
+                                                                                                    } ?> placeholder="Ilość na stronie">
+                        <label for="inputPage">Strona</label>
+                        <input type="number" name="page" class="inputBox" onchange="submitForm()" id="inputPage" <?php if (isset($page)) {
+                                                                                                                        echo "value='$page'";
+                                                                                                                    } else {
+                                                                                                                        $page = 1;
+                                                                                                                        echo "value='$page'";
+                                                                                                                    } ?> placeholder="Strona">
                         <label for="randomized">Losowo</label>
                         <input type="checkbox" name="randomized" id="randomized" <?php if (isset($randomized)) {
-                                                                                        echo "value='$randomized'";
+                                                                                        echo "checked";
+                                                                                    } else {
+                                                                                        $randomized = "off";
                                                                                     } ?> placeholder="Losowo">
                     </div>
-                    <button type="submit" class="button">Filtruj</button>
+                    <div>
+                        <button type="submit" class="button" style="float: left; margin-right: 20px;">Filtruj</button>
+                        <button type="button" class="button" style="float: left;" onclick="window.location.href='./logout.php';">Wyloguj</button>
+                    </div>
                 </form>
                 <div class="memories">
-
+                    <?php
+                    include './assets/config.php';
+                    $dateRange = explode(" - ", $dateRange);
+                    if (sizeof($dateRange) == 2) {
+                        try {
+                            $dateA = strtotime($dateRange[0]);
+                            $dateB = strtotime($dateRange[1]);
+                            if ($dateA <= strtotime("31.12.2021") && $dateB <= strtotime("31.12.2021")) {
+                                $dateA = date("Y-m-d", $dateA);
+                                $dateB = date("Y-m-d", $dateB);
+                                $size = mysqli_real_escape_string($conn, $size);
+                                $page = mysqli_real_escape_string($conn, $page);
+                                $randomized = mysqli_real_escape_string($conn, $randomized);
+                                $id = $_SESSION['user_id'];
+                                $offset = $size * ($page - 1);
+                                if ($randomized == "on") {
+                                    $sql = "SELECT memories.id AS id, memories.date AS date, memories.memory AS memory, fom.fom AS fom FROM memories LEFT JOIN fom ON DATE(memories.date)=DATE(fom.date) WHERE memories.user_id=$id AND memories.date < '$dateB' AND memories.date > '$dateA' ORDER BY RAND() DESC LIMIT $size OFFSET $offset;";
+                                } else {
+                                    $sql = "SELECT memories.id AS id, memories.date AS date, memories.memory AS memory, fom.fom AS fom FROM memories LEFT JOIN fom ON DATE(memories.date)=DATE(fom.date) WHERE memories.user_id=$id AND memories.date < '$dateB' AND memories.date > '$dateA' ORDER BY memories.date DESC LIMIT $size OFFSET $offset;";
+                                }
+                                $posts = mysqli_query($conn, $sql);
+                                while ($row = mysqli_fetch_assoc($posts)) {
+                                    $date = $row['date'];
+                                    $memory = $row['memory'];
+                                    $fom = $row['fom'];
+                                    if ($fom == 2) {
+                                        $fom = "<img src='./assets/happiness.png'>";
+                                    } else if ($fom == 1) {
+                                        $fom = "<img src='./assets/indifferent.png'>";
+                                    } else if ($fom == "0") {
+                                        $fom = "<img src='./assets/sad.png'>";
+                                    } else {
+                                        $fom = "";
+                                    }
+                                    echo "
+                                        <div class='memory'>
+                                            <h4>$date</h4>
+                                            $fom
+                                            <p>$memory</p>
+                                        </div>
+                                    ";
+                                }
+                            } else {
+                                echo "
+                                    <div class='memory'>
+                                        <h4>Błąd!</h4>
+                                        <p>Nieprawidłowy format daty!</p>
+                                    </div>
+                                    ";
+                            }
+                        } catch (Exception $e) {
+                            echo "
+                                <div class='memory'>
+                                    <h4>Błąd!</h4>
+                                    <p>Nieprawidłowy format daty!</p>
+                                </div>
+                                ";
+                        }
+                    } else {
+                        echo "
+                            <div class='memory'>
+                                <h4>Błąd!</h4>
+                                <p>Nieprawidłowy format daty!</p>
+                            </div>
+                            ";
+                    }
+                    ?>
                 </div>
             </div>
         <?php

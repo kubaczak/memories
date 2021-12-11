@@ -4,4 +4,3 @@ function changeVisibility(x){
     document.getElementById("login").classList.add('invisible')
     document.getElementById(x).classList.remove('invisible')
 }
-

@@ -116,6 +116,11 @@ var ranged = new Datepicker('#datePicker', {
   ranged: true,
   inline: false,
   separator: " - ",
-  min: new Date(new Date().getFullYear()-1, 0, 1),
-  max: new Date(new Date().getFullYear()-1, 11, 31)
+  min: new Date(new Date().getFullYear()-5, 0, 1),
+  max: new Date(new Date().getFullYear(), 11, 31)
 });
+
+function submitForm(){
+  document.getElementById("settings").submit();
+  console.log("11")
+}
